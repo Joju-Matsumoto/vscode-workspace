@@ -14,18 +14,22 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init [ROOT DIRECTORY]",
 	Short: "init workspace",
-	Long:  `init workspace`,
-	Args:  cobra.ExactArgs(1),
+	Long: `init workspace
+
+With no [ROOT DIRECTORY], current directory is used`,
+	Args: cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
-			usecase, err := NewUsecase(baseFile)
+			dir := "."
+			if len(args) > 0 {
+				dir = args[0]
+			}
+			name, err := cmd.Flags().GetString("name")
 			if err != nil {
 				return err
 			}
 
-			dir := args[0]
-			var name string
-			name, err = cmd.Flags().GetString("name")
+			usecase, err := NewUsecase(baseFile)
 			if err != nil {
 				return err
 			}
