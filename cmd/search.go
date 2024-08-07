@@ -11,19 +11,14 @@ import (
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
 	Use:   "search [BASE DIRECTORY]...",
-	Short: "search workspaces",
-	Long: `search workspaces
+	Short: "search workspace files under the specified directory",
+	Long: `search workspace files under the specified directory
 
   With no [BASE DIRECTOR], current directory is used.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		dirs := args
 		if len(dirs) == 0 {
 			dirs = append(dirs, ".")
-		}
-
-		usecase, err := NewUsecase(baseFile)
-		if err != nil {
-			return err
 		}
 
 		workspaces := make([]vscodeworkspace.Workspace, 0)

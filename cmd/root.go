@@ -7,10 +7,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Joju-Matsumoto/vscode-workspace/vscodeworkspace"
 	"github.com/spf13/cobra"
 )
 
-var baseFile string
+var usecase vscodeworkspace.Usecase
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -42,5 +43,13 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
+	var baseFile string
 	rootCmd.PersistentFlags().StringVarP(&baseFile, "file", "f", defaultBaseFile, "File path to save the list of workspaces")
+
+	uc, err := NewUsecase(baseFile)
+	if err != nil {
+		panic(err)
+	}
+
+	usecase = uc
 }

@@ -15,14 +15,24 @@ var openCmd = &cobra.Command{
 	Use:   "open [WORKSPACE NAME]",
 	Short: "open workspace",
 	Long:  `open workspace`,
-	Args:  cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		// 最初の引数以外は補完しない
+		if len(args) >= 1 {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		wss, err := usecase.ListWorkspace()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		vargs := ListWorkspaceNamesWithDescription(wss)
+
+		return vargs, cobra.ShellCompDirectiveDefault
+	},
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
-			usecase, err := NewUsecase(baseFile)
-			if err != nil {
-				return err
-			}
-
 			name := args[0]
 
 			if err := usecase.OpenWorkspace(name); err != nil {

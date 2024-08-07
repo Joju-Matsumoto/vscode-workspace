@@ -15,3 +15,11 @@ func ShowWorkspaces(wss ...vscodeworkspace.Workspace) {
 	}
 	w.Flush()
 }
+
+func ListWorkspaceNamesWithDescription(wss []vscodeworkspace.Workspace) []string {
+	nwds := make([]string, 0, len(wss))
+	for _, ws := range wss {
+		nwds = append(nwds, fmt.Sprintf("%s\t%s", ws.Name, ws.Path))
+	}
+	return nwds
+}

@@ -10,20 +10,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rmCmd represents the rm command
-var rmCmd = &cobra.Command{
-	Use:   "rm [NAME]...",
-	Short: "remove workspace from the list",
-	Long:  `remove workspace from the list`,
-	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		names := args
-
-		usecase, err := NewUsecase(baseFile)
+// removeCmd represents the remove command
+var removeCmd = &cobra.Command{
+	Use:     "remove [NAME]...",
+	Aliases: []string{"rm"},
+	Short:   "remove workspace from the list",
+	Long:    `remove workspace from the list`,
+	Args:    cobra.MinimumNArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		wss, err := usecase.ListWorkspace()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
-			return
+			return nil, cobra.ShellCompDirectiveError
 		}
+
+		vargs := ListWorkspaceNamesWithDescription(wss)
+
+		return vargs, cobra.ShellCompDirectiveDefault
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		names := args
 
 		for _, name := range names {
 			if err := usecase.DeleteWorkspace(name); err != nil {
@@ -35,7 +41,7 @@ var rmCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(rmCmd)
+	rootCmd.AddCommand(removeCmd)
 
 	// Here you will define your flags and configuration settings.
 

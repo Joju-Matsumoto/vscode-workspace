@@ -12,15 +12,14 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "list workspaces under the base directory",
-	Long:  `list workspaces under the base directory`,
+	Use:     "list",
+	Aliases: []string{"ls"},
+	Short:   "list workspaces",
+	Long:    `list workspaces`,
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		usecase, err := NewUsecase(baseFile)
-		if err != nil {
-			return err
-		}
-
 		wss, err := usecase.ListWorkspace()
 		if err != nil {
 			return err

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sort"
 )
 
 var (
@@ -101,13 +102,25 @@ func (u *usecase) AddWorkspace(name string, path string) error {
 
 // ListWorkspace implements Usecase.
 func (u *usecase) ListWorkspace() ([]Workspace, error) {
-	return u.repository.List()
+	wss, err := u.repository.List()
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Slice(wss, func(i, j int) bool { return wss[i].Name < wss[j].Name })
+
+	return wss, nil
 }
 
 // RenameWorkspace implements Usecase.
 func (u *usecase) RenameWorkspace(oldName string, newName string) error {
 	ws, err := u.repository.Get(oldName)
 	if err != nil {
+		return err
+	}
+
+	if _, err := u.repository.Get(newName); !errors.Is(err, ErrWorkspaceNotFound) {
+		// newNameが既に存在する場合はエラー
 		return err
 	}
 

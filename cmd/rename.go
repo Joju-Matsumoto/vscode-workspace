@@ -16,15 +16,24 @@ var renameCmd = &cobra.Command{
 	Short: "rename workspace",
 	Long:  `rename workspace`,
 	Args:  cobra.ExactArgs(2),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		// 最初の引数以外は補完しない
+		if len(args) >= 1 {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		wss, err := usecase.ListWorkspace()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		vargs := ListWorkspaceNamesWithDescription(wss)
+
+		return vargs, cobra.ShellCompDirectiveDefault
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		oldName := args[0]
 		newName := args[1]
-
-		usecase, err := NewUsecase(baseFile)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return
-		}
 
 		if err := usecase.RenameWorkspace(oldName, newName); err != nil {
 			fmt.Fprintln(os.Stderr, err)

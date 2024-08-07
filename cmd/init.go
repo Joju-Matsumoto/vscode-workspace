@@ -28,12 +28,7 @@ With no [ROOT DIRECTORY], current directory is used`,
 			if err != nil {
 				return err
 			}
-
-			usecase, err := NewUsecase(baseFile)
-			if err != nil {
-				return err
-			}
-
+			
 			ws, err := usecase.InitWorkspace(name, dir)
 			if err != nil {
 				return err

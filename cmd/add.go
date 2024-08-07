@@ -18,15 +18,9 @@ var addCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := func() error {
-			usecase, err := NewUsecase(baseFile)
-			if err != nil {
-				return err
-			}
-
 			path := args[0]
 
-			var name string
-			name, err = cmd.Flags().GetString("name")
+			name, err := cmd.Flags().GetString("name")
 			if err != nil {
 				return err
 			}
