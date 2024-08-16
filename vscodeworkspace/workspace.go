@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var (
@@ -11,8 +12,15 @@ var (
 )
 
 type Workspace struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
+	Name     string    `json:"name"`
+	Path     string    `json:"path"`
+	OpenedAt time.Time `json:"opened_at"`
+	Count    int       `json:"count"`
+}
+
+func (w *Workspace) Open() {
+	w.OpenedAt = time.Now()
+	w.Count += 1
 }
 
 func NewWorkspace(name string, path string) (Workspace, error) {
@@ -24,8 +32,9 @@ func NewWorkspace(name string, path string) (Workspace, error) {
 		name = strings.TrimSuffix(filepath.Base(path), WorkspaceFileExt)
 	}
 	ws := Workspace{
-		Name: name,
-		Path: abs,
+		Name:  name,
+		Path:  abs,
+		Count: 0,
 	}
 	if err := ws.Validate(); err != nil {
 		return Workspace{}, err

@@ -192,7 +192,16 @@ func (u *usecase) OpenWorkspace(name string) error {
 		return err
 	}
 
-	return u.executer.Open(ws.Path)
+	if err := u.executer.Open(ws.Path); err != nil {
+		return err
+	}
+
+	ws.Open()
+
+	if err := u.repository.Save(ws); err != nil {
+		return err
+	}
+	return nil
 }
 
 var _ Usecase = (*usecase)(nil)
