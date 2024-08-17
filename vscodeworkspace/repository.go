@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 )
 
 var (
@@ -13,6 +14,14 @@ var (
 //
 // Interface
 //
+
+type SortBy int
+
+const (
+	SORTBY_NAME SortBy = iota
+	SORTBY_OPENEDAT
+	SORTBY_COUNT
+)
 
 type (
 	WorkspaceRepository interface {
@@ -32,8 +41,12 @@ type (
 		GetByPath(path string) (Workspace, error)
 	}
 
+	ListWorkspaceRepositoryOption struct {
+		SortBy SortBy
+	}
+
 	ListWorkspaceRepository interface {
-		List() ([]Workspace, error)
+		List(opt ListWorkspaceRepositoryOption) ([]Workspace, error)
 	}
 
 	SaveWorkspaceRepository interface {
@@ -45,7 +58,7 @@ type (
 	}
 
 	SearchWorkspaceRepository interface {
-		Search(query string) ([]Workspace, error)
+		Search(query string, opt ListWorkspaceRepositoryOption) ([]Workspace, error)
 	}
 )
 
@@ -94,11 +107,27 @@ func (wsr *workspaceRepositoryFile) GetByPath(path string) (Workspace, error) {
 }
 
 // List implements WorkspaceRepository.
-func (wsr *workspaceRepositoryFile) List() ([]Workspace, error) {
+func (wsr *workspaceRepositoryFile) List(opt ListWorkspaceRepositoryOption) ([]Workspace, error) {
 	wss := make([]Workspace, 0, len(wsr.workspaces))
 	for _, ws := range wsr.workspaces {
 		wss = append(wss, ws)
 	}
+
+	switch opt.SortBy {
+	case SORTBY_OPENEDAT:
+		sort.Slice(wss, func(i, j int) bool {
+			return wss[i].Count == wss[j].Count && wss[i].Name < wss[j].Name || wss[i].OpenedAt.After(wss[j].OpenedAt)
+		})
+	case SORTBY_COUNT:
+		sort.Slice(wss, func(i, j int) bool {
+			return wss[i].Count == wss[j].Count && wss[i].Name < wss[j].Name || wss[i].Count > wss[j].Count
+		})
+	default:
+		sort.Slice(wss, func(i, j int) bool {
+			return wss[i].Name < wss[j].Name
+		})
+	}
+
 	return wss, nil
 }
 
@@ -122,9 +151,9 @@ func (wsr *workspaceRepositoryFile) Delete(name string) error {
 }
 
 // Search implements WorkspaceRepository.
-func (wsr *workspaceRepositoryFile) Search(query string) ([]Workspace, error) {
+func (wsr *workspaceRepositoryFile) Search(query string, opt ListWorkspaceRepositoryOption) ([]Workspace, error) {
 	// TODO: 検索機能
-	return wsr.List()
+	return wsr.List(opt)
 }
 
 var _ WorkspaceRepository = (*workspaceRepositoryFile)(nil)
@@ -159,7 +188,7 @@ func (wsr *workspaceRepositoryFile) loadFile() error {
 }
 
 func (wsr *workspaceRepositoryFile) saveFile() error {
-	wss, err := wsr.List()
+	wss, err := wsr.List(ListWorkspaceRepositoryOption{})
 	if err != nil {
 		return err
 	}

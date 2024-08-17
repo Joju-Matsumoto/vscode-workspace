@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"sort"
 )
 
 var (
@@ -28,8 +27,12 @@ type (
 		GetWorkspace(name string) (Workspace, error)
 	}
 
+	ListWorkspaceUsecaseOption struct {
+		SortBy string // default: name
+	}
+
 	ListWorkspaceUsecase interface {
-		ListWorkspace() ([]Workspace, error)
+		ListWorkspace(opt ListWorkspaceUsecaseOption) ([]Workspace, error)
 	}
 
 	AddWorkspaceUsecase interface {
@@ -45,7 +48,7 @@ type (
 	}
 
 	SearchWorkspaceUsecase interface {
-		SearchWorkspace(query string) ([]Workspace, error)
+		SearchWorkspace(query string, opt ListWorkspaceUsecaseOption) ([]Workspace, error)
 	}
 
 	SearchWorkspaceFromDirectoryUsecase interface {
@@ -101,13 +104,13 @@ func (u *usecase) AddWorkspace(name string, path string) error {
 }
 
 // ListWorkspace implements Usecase.
-func (u *usecase) ListWorkspace() ([]Workspace, error) {
-	wss, err := u.repository.List()
+func (u *usecase) ListWorkspace(opt ListWorkspaceUsecaseOption) ([]Workspace, error) {
+	wss, err := u.repository.List(ListWorkspaceRepositoryOption{
+		SortBy: opt.GetSortBy(),
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	sort.Slice(wss, func(i, j int) bool { return wss[i].Name < wss[j].Name })
 
 	return wss, nil
 }
@@ -154,8 +157,10 @@ func (u *usecase) DeleteWorkspace(name string) error {
 }
 
 // SearchWorkspace implements Usecase.
-func (u *usecase) SearchWorkspace(query string) ([]Workspace, error) {
-	return u.repository.Search(query)
+func (u *usecase) SearchWorkspace(query string, opt ListWorkspaceUsecaseOption) ([]Workspace, error) {
+	return u.repository.Search(query, ListWorkspaceRepositoryOption{
+		SortBy: opt.GetSortBy(),
+	})
 }
 
 // SearchWorkspaceFromDirectory implements Usecase.
@@ -192,7 +197,26 @@ func (u *usecase) OpenWorkspace(name string) error {
 		return err
 	}
 
-	return u.executer.Open(ws.Path)
+	if err := u.executer.Open(ws.Path); err != nil {
+		return err
+	}
+
+	ws.Open()
+
+	if err := u.repository.Save(ws); err != nil {
+		return err
+	}
+	return nil
 }
 
 var _ Usecase = (*usecase)(nil)
+
+func (opt *ListWorkspaceUsecaseOption) GetSortBy() SortBy {
+	switch opt.SortBy {
+	case "opened_at":
+		return SORTBY_OPENEDAT
+	case "count":
+		return SORTBY_COUNT
+	}
+	return SORTBY_NAME
+}

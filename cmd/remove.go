@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Joju-Matsumoto/vscode-workspace/vscodeworkspace"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +19,7 @@ var removeCmd = &cobra.Command{
 	Long:    `remove workspace from the list`,
 	Args:    cobra.MinimumNArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		wss, err := usecase.ListWorkspace()
+		wss, err := usecase.ListWorkspace(vscodeworkspace.ListWorkspaceUsecaseOption{})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return nil, cobra.ShellCompDirectiveError
