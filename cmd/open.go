@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Joju-Matsumoto/vscode-workspace/vscodeworkspace"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,7 @@ var openCmd = &cobra.Command{
 		if len(args) >= 1 {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
-		wss, err := usecase.ListWorkspace()
+		wss, err := usecase.ListWorkspace(vscodeworkspace.ListWorkspaceUsecaseOption{})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return nil, cobra.ShellCompDirectiveError

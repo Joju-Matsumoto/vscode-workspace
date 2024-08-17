@@ -31,6 +31,8 @@ var searchCmd = &cobra.Command{
 			workspaces = append(workspaces, wss...)
 		}
 
+		// TODO: COUNTが表示されるのが微妙
+		// TODO: 既にリポジトリに登録済みのものかどうか判定して表示を分けたい
 		ShowWorkspaces(workspaces...)
 
 		return nil

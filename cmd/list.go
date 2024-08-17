@@ -6,7 +6,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/Joju-Matsumoto/vscode-workspace/vscodeworkspace"
 	"github.com/spf13/cobra"
 )
 
@@ -20,13 +22,22 @@ var listCmd = &cobra.Command{
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		wss, err := usecase.ListWorkspace()
+
+		sortBy, err := cmd.Flags().GetString("sort")
+		if err != nil {
+			return err
+		}
+
+		wss, err := usecase.ListWorkspace(vscodeworkspace.ListWorkspaceUsecaseOption{
+			SortBy: sortBy,
+		})
 		if err != nil {
 			return err
 		}
 
 		if len(wss) == 0 {
 			fmt.Fprintln(os.Stdout, "No workspace found")
+			return nil
 		}
 
 		ShowWorkspaces(wss...)
@@ -37,13 +48,6 @@ var listCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(listCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	sortBy := NewEnum([]string{"name", "opened_at", "count"}, "opened_at")
+	listCmd.Flags().VarP(sortBy, "sort", "s", fmt.Sprintf("sort by [%s]", strings.Join(sortBy.Allowed, ",")))
 }
