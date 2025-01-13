@@ -1,0 +1,19 @@
+name: release
+on:
+  push:
+    branches:
+      - mains
+permissions:
+  contents: write
+jobs:
+  release:
+    uses: Joju-Matsumoto/actions/.github/workflows/release.yml@main
+    with:
+      type: |
+        ${{
+          startsWith(github.event.head_commit.message, 'major:') &&
+            'major' ||
+          startsWith(github.event.head_commit.message, 'minor:') &&
+            'minor' ||
+          'patch'
+        }}

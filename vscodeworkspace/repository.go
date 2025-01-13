@@ -145,8 +145,13 @@ func (wsr *workspaceRepositoryFile) Save(ws Workspace) error {
 
 // Delete implements WorkspaceRepository.
 func (wsr *workspaceRepositoryFile) Delete(name string) error {
+	// 削除
 	delete(wsr.workspaces, name)
 
+	// 保存
+	if err := wsr.saveFile(); err != nil {
+		return err
+	}
 	return nil
 }
 
