@@ -6,6 +6,7 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+	"runtime/debug"
 
 	"github.com/Joju-Matsumoto/vscode-workspace/vscodeworkspace"
 	"github.com/spf13/cobra"
@@ -26,6 +27,13 @@ func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
+	}
+}
+
+func init() {
+	info, ok := debug.ReadBuildInfo()
+	if ok {
+		rootCmd.Version = info.Main.Version
 	}
 }
 
